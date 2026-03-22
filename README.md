@@ -98,7 +98,7 @@ dotnet build ProtoShift.sln
 3. Agent 在 `workspace/<project-slug>/` 下调用 Godot MCP/CLI 创建场景、脚本、资源绑定和玩法逻辑。
 	默认先通过 ProtoShift MCP 的 `initialize_godot_project` 复制 `samples/godot-standard-template/`，再做定制，避免从零拼装 Godot C# 工程。
 4. 在每次重新打开 Godot 编辑器、重新运行项目或准备最终交付前，Agent 先关闭已有 Godot 实例，确保同一时刻只有一个 Godot 窗口。
-5. 开发完成后，Agent 再通过 Godot MCP 启动最终版本游戏，交给人类检查。
+5. 开发完成后，Agent 再通过 Godot MCP 启动最终版本游戏，交给人类检查；这次最终验收启动默认保持运行，不会立刻自动停止，除非人类检查结束或用户另有指示。
 6. 共享玩法规则写入 Shared Core，避免锁死在 Godot 引擎层。
 7. 当原型稳定后，Agent 在同一项目中调用 Unreal MCP/CLI 和 UnrealSharp，把共享逻辑迁移到 Unreal 5。
 8. 用户继续通过同一个自然语言入口推进后续开发，而不是切换一套全新的工具链。

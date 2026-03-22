@@ -51,7 +51,7 @@ opencode 启动后会自动加载：
 ## Godot 原型默认闭环
 
 - 当用户直接说“制作一个飞机大战游戏”这类自然语言需求时，ProtoShift 不应只写文件
-- 默认闭环应为：先获取 Godot 当前版本 → 用 ProtoShift MCP 的 `initialize_godot_project` 初始化 `workspace/<project-slug>/` → 先做一次 `dotnet build` → 按需求修改场景/脚本 → 再做一次 `dotnet build` → 若之前已开过 Godot，先关闭旧实例 → 用 Godot MCP 打开项目 → 运行一次 → 读取日志 → 必要时修复并重跑 → 交付前再关闭旧实例并启动最终版本给人类检查
+- 默认闭环应为：先获取 Godot 当前版本 → 用 ProtoShift MCP 的 `initialize_godot_project` 初始化 `workspace/<project-slug>/` → 先做一次 `dotnet build` → 按需求修改场景/脚本 → 再做一次 `dotnet build` → 若之前已开过 Godot，先关闭旧实例 → 用 Godot MCP 打开项目 → 运行一次 → 读取日志 → 必要时修复并重跑 → 停止本次开发期验证运行并汇报结果 → 交付前再关闭旧实例并启动最终版本给人类检查，且最终验收启动后默认保持运行
 - 只有在 MCP 未连接、Godot 路径无效或本机环境不可运行时，才允许退化为“仅生成代码并报告阻塞”
 
 ## 第一个原型
