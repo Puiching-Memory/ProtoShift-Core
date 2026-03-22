@@ -1,0 +1,17 @@
+{
+  "widget": "WBP_TemplateHud",
+  "bindings": [
+    {
+      "widgetName": "StatusText",
+      "viewModelField": "statusText"
+    },
+    {
+      "widgetName": "DetailText",
+      "viewModelField": "detailText"
+    },
+    {
+      "widgetName": "HintText",
+      "viewModelField": "hintText"
+    }
+  ]
+}

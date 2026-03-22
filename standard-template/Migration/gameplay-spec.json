@@ -1,0 +1,36 @@
+{
+  "version": "1.0.0",
+  "runtimeType": "ProtoShiftGame.GamePackage.PrototypeRuntime",
+  "viewModelType": "ProtoShiftGame.GamePackage.PrototypeViewModel",
+  "commands": [
+    {
+      "name": "ConfirmPrimaryAction",
+      "source": "HostInput",
+      "description": "Confirm the primary action and switch the runtime into a running mode."
+    },
+    {
+      "name": "TogglePause",
+      "source": "HostInput",
+      "description": "Toggle the template runtime between running and paused."
+    },
+    {
+      "name": "ResetDemo",
+      "source": "HostInput",
+      "description": "Reset the template runtime back to a clean ready state."
+    }
+  ],
+  "events": [
+    "Bootstrapped",
+    "ModeChanged",
+    "Paused",
+    "Resumed",
+    "Reset"
+  ],
+  "state": {
+    "phase": ["Ready", "Running", "Paused"],
+    "trackedFields": ["mode", "confirmCount", "lastCommand"]
+  },
+  "viewModel": {
+    "fields": ["statusText", "detailText", "hintText"]
+  }
+}

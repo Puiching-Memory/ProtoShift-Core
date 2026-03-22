@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>ProtoShiftGame.UnrealHost</AssemblyName>
+    <RootNamespace>ProtoShiftGame.UnrealHost</RootNamespace>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\GamePackage\GamePackage.csproj" />
+    <ProjectReference Include="..\..\Core\EngineBridge\EngineBridge.csproj" />
+  </ItemGroup>
+
+</Project>

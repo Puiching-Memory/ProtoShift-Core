@@ -1,0 +1,14 @@
+{
+  "phase": "Ready",
+  "mode": "Template",
+  "confirmCount": 0,
+  "lastCommand": "ResetDemo",
+  "statusText": "Template ready. Extend GamePackage before touching host code.",
+  "detailText": "Last command: ResetDemo | Confirm count: 0",
+  "hintText": "Enter confirms a primary action, Esc pauses, R resets the demo.",
+  "recentEvents": [
+    "Template runtime bootstrapped.",
+    "Mode switched to Confirmed. Confirm count: 1.",
+    "Template runtime reset to initial state."
+  ]
+}

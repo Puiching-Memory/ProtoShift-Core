@@ -1,21 +1,21 @@
 ---
 name: shared-core
-description: "SharedCore 共享规则技能：管理跨引擎的 C# 规则层、状态机和数据模型"
+description: "SharedCore 平台核心技能：管理平台级通用能力与共享协议，不承载具体游戏规则"
 ---
 
-# SharedCore 共享规则
+# SharedCore 平台核心
 
 ## 能力
 
-- 创建和修改状态机定义
-- 管理任务系统（前置条件、完成回调）
-- 定义配置模型和加载策略
-- 设计存档结构
-- 定义原型描述模型
+- 创建和修改平台级状态机、任务系统和序列化工具
+- 定义通用配置模型、存档结构和协议类型
+- 提供 Snapshot / Replay 基础设施
+- 定义宿主 Runtime 所需的抽象契约
+- 维护平台级原型描述模型与双宿主共享协议基座
 
 ## 项目位置
 
-`src/SharedCore/` — .NET 8 类库
+`standard-template/Core/SharedCore/` — .NET 8 类库
 
 ## 命名空间结构
 
@@ -33,19 +33,32 @@ description: "SharedCore 共享规则技能：管理跨引擎的 C# 规则层、
 - **可测试**：所有逻辑可通过纯 .NET 单元测试验证
 - **可序列化**：所有模型支持 JSON 序列化
 - **可组合**：状态机、任务、配置可自由组合
+- **非项目业务层**：不得写入任何具体游戏规则或项目专属领域模型
+- **服务双宿主**：这里提供的是所有项目都可复用的基础设施，不是某个项目进入“迁移阶段”后才启用的特殊层
+
+## 严格边界
+
+以下内容不应写入 `standard-template/Core/SharedCore/`：
+
+- 某个具体游戏的回合规则
+- 某个项目的球、卡牌、技能、敌人等领域对象
+- 某个项目的 UI 文案或 ViewModel 细节
+- 某个项目的关卡结构和资源配置
+
+上述内容应写入项目目录下的 `GamePackage/`。
 
 ## 使用模式
 
-### 在 Godot 中使用
+### 正确用法
 
 ```csharp
 using ProtoShift.SharedCore.StateMachine;
 
-public partial class GameManager : Node
+public sealed class TurnLoop
 {
     private FiniteStateMachine<GameState> _fsm;
 
-    public override void _Ready()
+    public TurnLoop()
     {
         _fsm = new FiniteStateMachine<GameState>(GameState.Menu);
         _fsm.DefineState(GameState.Menu);
@@ -55,21 +68,11 @@ public partial class GameManager : Node
 }
 ```
 
-### 在 Unreal (UnrealSharp) 中使用
+上例应被项目级 `GamePackage` 复用，而不是直接写在 Godot 节点或 Unreal Actor 中。
+
+### 错误用法
 
 ```csharp
-using ProtoShift.SharedCore.StateMachine;
-using UnrealSharp;
-
-[UClass]
-public class AGameManager : AActor
-{
-    private FiniteStateMachine<GameState> _fsm;
-
-    protected override void BeginPlay()
-    {
-        _fsm = new FiniteStateMachine<GameState>(GameState.Menu);
-        // 与 Godot 中完全一致的 API
-    }
-}
+// 不要在 SharedCore 中加入任何只为某个项目服务的规则类
+// 例如 PoolMatchRules、CardBattleState、ShooterEnemyWave 等。
 ```

@@ -11,12 +11,18 @@ description: "UI Schema 技能：管理通用 UI 描述、主题和双端映射"
 - 配置主题令牌（颜色、字号、间距、圆角）
 - 设置数据绑定（文本、数值、可见性、列表）
 - 定义交互事件（点击、悬停、焦点）
+- 管理 ViewModel 合约，保持其由 `GamePackage` 输出
 - 生成 Godot Control 映射提示
 - 生成 Unreal UMG 映射提示
+- 检查 Godot 与 Unreal UI 映射是否仍然消费当前项目的真实 ViewModel，而不是模板残留字段
 
 ## 项目位置
 
-`src/UiSchema/` — .NET 8 类库
+`standard-template/Core/UiSchema/` — .NET 8 类库
+
+项目级 UI 产物建议放在 `workspace/<project-slug>/Migration/ui/`，并由 `GamePackage` 提供 ViewModel。
+
+UiSchema 不是后期补文档；它是从原型第一天起就要同时服务 Godot HUD 和 Unreal UMG 的共享契约。
 
 ## 组件类型
 

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>ProtoShiftGame.GamePackage</AssemblyName>
+    <RootNamespace>ProtoShiftGame.GamePackage</RootNamespace>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\EngineBridge\EngineBridge.csproj" />
+    <ProjectReference Include="..\Core\SharedCore\SharedCore.csproj" />
+    <ProjectReference Include="..\Core\UiSchema\UiSchema.csproj" />
+  </ItemGroup>
+
+</Project>

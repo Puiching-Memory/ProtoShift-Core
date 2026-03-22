@@ -1,0 +1,16 @@
+{
+  "actions": [
+    {
+      "name": "ConfirmPrimaryAction",
+      "mapping": "Enter / Gamepad FaceButtonBottom"
+    },
+    {
+      "name": "TogglePause",
+      "mapping": "Escape / Gamepad SpecialRight"
+    },
+    {
+      "name": "ResetDemo",
+      "mapping": "R / Gamepad FaceButtonTop"
+    }
+  ]
+}

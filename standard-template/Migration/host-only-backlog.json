@@ -1,0 +1,11 @@
+{
+  "godot": [
+    "Drive world-specific visual presentation from host-side scene mutations",
+    "Map additional gameplay inputs to Godot InputMap when the project gains more actions"
+  ],
+  "unreal": [
+    "Create Enhanced Input mappings for ConfirmPrimaryAction, TogglePause, and ResetDemo",
+    "Bind template HUD schema to UMG widgets using widget-bindings.json",
+    "Forward GamePackage snapshots to Unreal debug overlays when needed"
+  ]
+}

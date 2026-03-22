@@ -26,7 +26,7 @@
 
   // === MCP 服务器 ===
   // Godot 使用 Coding-Solo/godot-mcp 作为 MCP server。
-  // ProtoShift 自带一个本地 MCP server，当前只负责初始化 Godot 项目模板。
+  // ProtoShift 自带一个本地 MCP server，负责初始化统一模板，并提醒后续保持 GamePackage、测试和文档的双宿主一致性。
   // 不要直接把 Godot 可执行文件当成 MCP server 启动，否则可能出现 UI 被拉起后又退出的行为。
   // 只需把 GODOT_PATH 指向本机 Godot 可执行文件。
   // Unreal 使用 GenOrca/unreal-mcp，自行把仓库克隆到 Unreal 项目的 Plugins 目录后，
