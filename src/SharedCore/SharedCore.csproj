@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>ProtoShift.SharedCore</RootNamespace>
+    <AssemblyName>ProtoShift.SharedCore</AssemblyName>
+    <Description>跨引擎共享规则层：状态机、任务系统、配置、存档和原型描述模型</Description>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>ProtoShift.UnrealBridge</RootNamespace>
+    <AssemblyName>ProtoShift.UnrealBridge</AssemblyName>
+    <Description>Unreal 引擎适配层：通过 MCP / CLI / Remote Control 控制 Unreal 编辑器</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EngineBridge\EngineBridge.csproj" />
+  </ItemGroup>
+
+</Project>

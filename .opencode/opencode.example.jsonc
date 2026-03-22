@@ -1,0 +1,47 @@
+{
+  // ProtoShift-Core opencode 配置模板
+  // 使用方法：复制此文件为 opencode.jsonc，填入你的实际值
+  //   cp opencode.jsonc.example opencode.jsonc
+
+  // === Provider 配置 ===
+  "provider": {
+    // 示例：MiniMax Token Plan
+    // "minimax": {
+    //   "npm": "@ai-sdk/anthropic",
+    //   "options": {
+    //     "baseURL": "https://api.minimaxi.com/anthropic/v1",
+    //     "apiKey": "<YOUR_API_KEY>"
+    //   },
+    //   "models": {
+    //     "MiniMax-M2.7": { "name": "MiniMax-M2.7" }
+    //   }
+    // }
+  },
+
+  "instructions": [
+    "AGENTS.md"
+  ],
+
+  // === MCP 服务器 ===
+  // godot.command 中的路径需改为你本机的 Godot 安装位置
+  "mcp": {
+    "godot": {
+      "type": "local",
+      "command": ["<GODOT_PATH>", "--mcp"],
+      "enabled": true,
+      "timeout": 30000
+    },
+    "unreal": {
+      "type": "remote",
+      "url": "http://127.0.0.1:30010/mcp",
+      "enabled": false,
+      "timeout": 30000
+    }
+  },
+
+  "skills": {
+    "paths": [
+      ".opencode/skills"
+    ]
+  }
+}

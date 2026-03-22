@@ -1,0 +1,120 @@
+{
+  "id": "pool-hud",
+  "name": "Pool HUD",
+  "theme": {
+    "colors": {
+      "primary": "#2E7D32",
+      "secondary": "#1B5E20",
+      "background": "#0D3B0F",
+      "surface": "#1A4D1C",
+      "text": "#FFFFFF",
+      "textMuted": "#A5D6A7",
+      "success": "#4CAF50",
+      "warning": "#FF9800",
+      "error": "#F44336"
+    },
+    "fontSizes": {
+      "sm": "14",
+      "md": "18",
+      "lg": "24",
+      "xl": "36"
+    },
+    "spacing": {
+      "sm": "8",
+      "md": "16",
+      "lg": "24"
+    },
+    "borderRadii": {
+      "sm": "4",
+      "md": "8",
+      "lg": "12"
+    }
+  },
+  "root": {
+    "id": "hud-root",
+    "type": "Stack",
+    "style": { "width": "100%", "height": "100%" },
+    "children": [
+      {
+        "id": "top-bar",
+        "type": "HBox",
+        "style": {
+          "padding": "16",
+          "gap": "32",
+          "alignment": "SpaceBetween",
+          "backgroundColor": "rgba(0,0,0,0.5)"
+        },
+        "children": [
+          {
+            "id": "p1-info",
+            "type": "VBox",
+            "style": { "gap": "4" },
+            "children": [
+              {
+                "id": "p1-name",
+                "type": "Text",
+                "props": { "text": "Player 1" },
+                "style": { "fontSize": "18", "textColor": "#FFFFFF" },
+                "bindingKey": "p1Name"
+              },
+              {
+                "id": "p1-score",
+                "type": "Text",
+                "props": { "text": "0" },
+                "style": { "fontSize": "36", "textColor": "#4CAF50" },
+                "bindingKey": "p1Score"
+              }
+            ]
+          },
+          {
+            "id": "turn-indicator",
+            "type": "Text",
+            "props": { "text": "Player 1 Turn" },
+            "style": { "fontSize": "24", "textColor": "#FF9800" },
+            "bindingKey": "turnText"
+          },
+          {
+            "id": "p2-info",
+            "type": "VBox",
+            "style": { "gap": "4", "alignment": "End" },
+            "children": [
+              {
+                "id": "p2-name",
+                "type": "Text",
+                "props": { "text": "Player 2" },
+                "style": { "fontSize": "18", "textColor": "#FFFFFF" },
+                "bindingKey": "p2Name"
+              },
+              {
+                "id": "p2-score",
+                "type": "Text",
+                "props": { "text": "0" },
+                "style": { "fontSize": "36", "textColor": "#2196F3" },
+                "bindingKey": "p2Score"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "power-bar",
+        "type": "ProgressBar",
+        "style": {
+          "width": "200",
+          "height": "16",
+          "margin": "0 0 32 0",
+          "alignment": "Center"
+        },
+        "bindingKey": "shotPower"
+      }
+    ]
+  },
+  "bindings": {
+    "p1Name": { "key": "p1Name", "type": "Text", "source": "player1.name" },
+    "p1Score": { "key": "p1Score", "type": "Number", "source": "player1.score" },
+    "p2Name": { "key": "p2Name", "type": "Text", "source": "player2.name" },
+    "p2Score": { "key": "p2Score", "type": "Number", "source": "player2.score" },
+    "turnText": { "key": "turnText", "type": "Text", "source": "game.turnDisplay" },
+    "shotPower": { "key": "shotPower", "type": "Progress", "source": "input.power" }
+  }
+}
