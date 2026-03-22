@@ -26,15 +26,16 @@
 
 ## 项目模块
 
-| 模块 | 路径 | 职责 |
-|------|------|------|
-| SharedCore | `src/SharedCore/` | 引擎无关的 C# 规则层 |
-| EngineBridge | `src/EngineBridge/` | 统一操作语义接口 |
-| GodotBridge | `src/GodotBridge/` | Godot MCP/CLI 适配 |
-| UnrealBridge | `src/UnrealBridge/` | Unreal Remote Control 适配 |
-| UiSchema | `src/UiSchema/` | 通用 UI 描述层 |
-| Extension | `.opencode/` | Agent、Command、Skill、Plugin |
-| Plugin | `plugins/` | opencode 插件（hooks + tools） |
+| 模块         | 路径                 | 职责                                   |
+| ------------ | -------------------- | -------------------------------------- |
+| SharedCore   | `src/SharedCore/`    | 引擎无关的 C# 规则层                   |
+| EngineBridge | `src/EngineBridge/`  | 统一操作语义接口                       |
+| GodotBridge  | `src/GodotBridge/`   | Godot MCP/CLI 适配                     |
+| UnrealBridge | `src/UnrealBridge/`  | Unreal Remote Control 适配             |
+| UiSchema     | `src/UiSchema/`      | 通用 UI 描述层                         |
+| Extension    | `.opencode/`         | Agent、Command、Skill、Plugin          |
+| Plugin       | `.opencode/plugins/` | opencode 自动发现的插件入口            |
+| Workspace    | `workspace/`         | Agent 新建 Godot/Unreal 项目的默认目录 |
 
 ## 数据流
 

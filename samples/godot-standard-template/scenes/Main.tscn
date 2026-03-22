@@ -1,0 +1,34 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/Main.cs" id="1_main"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_status"]
+font_size = 22
+
+[node name="Main" type="Node"]
+script = ExtResource("1_main")
+
+[node name="GameRoot" type="Node" parent="."]
+
+[node name="World2D" type="Node2D" parent="GameRoot"]
+
+[node name="World3D" type="Node3D" parent="GameRoot"]
+
+[node name="UIRoot" type="CanvasLayer" parent="."]
+
+[node name="Hud" type="Control" parent="UIRoot"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="StatusLabel" type="Label" parent="UIRoot/Hud"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 780.0
+offset_bottom = 64.0
+text = "ProtoShift Godot template ready."
+label_settings = SubResource("LabelSettings_status")

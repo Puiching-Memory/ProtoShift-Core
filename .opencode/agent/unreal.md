@@ -26,6 +26,7 @@ mode: subagent
 
 ## 迁移策略
 
+- Unreal 承接项目默认创建或接入 `workspace/<project-slug>/` 下的目标工程
 - SharedCore 的 C# 类 → 通过 UnrealSharp 直接复用
 - Godot Node → 映射为 Unreal Actor/Component
 - GDScript → 需重写为 C++ 或通过 UnrealSharp 桥接

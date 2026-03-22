@@ -1,7 +1,7 @@
 {
   // ProtoShift-Core opencode 配置模板
   // 使用方法：复制此文件为 opencode.jsonc，填入你的实际值
-  //   cp opencode.jsonc.example opencode.jsonc
+  //   copy .opencode\\opencode.example.jsonc .opencode\\opencode.jsonc
 
   // === Provider 配置 ===
   "provider": {
@@ -22,18 +22,34 @@
     "AGENTS.md"
   ],
 
+  "default_agent": "protoshift",
+
   // === MCP 服务器 ===
-  // godot.command 中的路径需改为你本机的 Godot 安装位置
+  // Godot 使用 Coding-Solo/godot-mcp 作为 MCP server。
+  // ProtoShift 自带一个本地 MCP server，当前只负责初始化 Godot 项目模板。
+  // 不要直接把 Godot 可执行文件当成 MCP server 启动，否则可能出现 UI 被拉起后又退出的行为。
+  // 只需把 GODOT_PATH 指向本机 Godot 可执行文件。
+  // Unreal 使用 GenOrca/unreal-mcp，自行把仓库克隆到 Unreal 项目的 Plugins 目录后，
+  // 再把 UNREAL_MCP_SERVER_DIR 指向其中的 mcp-server 目录。
   "mcp": {
+    "protoshift": {
+      "type": "local",
+      "command": ["node", ".opencode/mcp/protoshift-mcp.mjs"],
+      "enabled": true,
+      "timeout": 30000
+    },
     "godot": {
       "type": "local",
-      "command": ["<GODOT_PATH>", "--mcp"],
+      "command": ["npx", "-y", "@coding-solo/godot-mcp"],
+      "environment": {
+        "GODOT_PATH": "<ABSOLUTE_GODOT_PATH>"
+      },
       "enabled": true,
       "timeout": 30000
     },
     "unreal": {
-      "type": "remote",
-      "url": "http://127.0.0.1:30010/mcp",
+      "type": "local",
+      "command": ["uv", "--directory", "{env:UNREAL_MCP_SERVER_DIR}", "run", "src/unreal_mcp/main.py"],
       "enabled": false,
       "timeout": 30000
     }
