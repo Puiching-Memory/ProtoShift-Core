@@ -1,347 +1,192 @@
-# ProtoShift-Core 最终执行方案
+# ProtoShift-Core 简化执行方案
 
-## 文档定位
+## 1. 最终产品定义
 
-本文定义 ProtoShift-Core 的最终目标、技术主线、系统边界、执行链路和验证方式。
+ProtoShift-Core 只做一件事：
 
-这是一份最终决策文档，不记录中间备选路线、阶段性计划或调研过程。
+- 把 opencode 变成一个面向游戏开发的定制化 Agent 工作台
+- 用户全程通过自然语言和同一个 shell 交互
+- Agent 先在 Godot 中完成原型开发
+- 原型稳定后，再在同一项目中迁移到 Unreal 5 继续开发
 
-ProtoShift-Core 的目标只有一个：
+这不是重写一套新 Agent，也不是同时维护两套独立工作流，而是在 opencode 之上加一层面向 Godot/Unreal 的产品化能力。
 
-- 让 Agent 在 Godot 中高效生成和迭代原型
-- 让共享核心逻辑在 Godot 与 Unreal 之间复用
-- 让 Unreal 在不重写全部玩法逻辑的前提下承接后续开发
+## 2. 固定技术路线
 
----
+主线固定如下：
 
-## 一、最终结论
+- `opencode` 以 git submodule 方式集成，作为主宿主和主交互入口
+- ProtoShift 只做二次开发：instructions、commands、hooks、skills、engine bridge
+- Godot 负责原型生成和快速迭代
+- Unreal 5 负责后续承接和正式开发
+- 共享逻辑优先写在 C# Shared Core 中
+- Godot 直接使用原生 C#
+- Unreal 通过 UnrealSharp 接入 Shared Core
+- 引擎控制层同时兼容 MCP 和 CLI，两者都作为后端实现
+- UI 不追求两个引擎控件完全一致，而是定义一层通用 UI Schema，再分别映射到 Godot 和 Unreal
 
-### 1.1 项目定位
+## 3. ACT 原则
 
-ProtoShift-Core 不是一个普通游戏项目，而是一套跨引擎原型开发工具链。它要解决三件事：
+ProtoShift-Core 采用 ACT 原则：
 
-1. Agent 如何控制引擎并稳定执行开发任务
-2. 玩法规则与核心逻辑如何跨引擎复用
-3. Godot 原型如何迁移到 Unreal 持续开发
+- A - Adapter First：先定义统一语义，再接入 Godot MCP/CLI 和 Unreal MCP/CLI
+- C - Code Reuse：玩法规则、状态机、任务系统、配置、存档和 UI 描述尽量共享
+- T - Tool Driven：所有核心流程优先通过 opencode + skills + MCP/CLI 驱动，不依赖人工点编辑器完成主工作流
 
-### 1.2 主线技术决策
+## 4. 最小架构
 
-项目主线固定如下：
+为了避免过度设计，第一阶段只保留四层。
 
-- Godot 负责 Agent 驱动的原型生成与快速迭代
-- Shared Core 负责跨引擎共享的纯 .NET 规则层
-- Unreal 负责正式开发承接
-- Unreal 侧唯一 C# 运行层为 UnrealSharp
-- 自动化入口统一收敛到 ProtoShift 自身语义层，再由后端适配 Godot MCP、Unreal MCP、CLI、Python、Remote Control 等能力
+### 4.1 opencode Host
 
-### 1.3 必须接受的工程现实
+负责：
 
-- Godot 原生支持 C#
-- Unreal 默认不把 C# 作为一等运行时开发语言
-- 因此跨引擎共享的前提不是“同一套引擎代码同时运行”，而是“共享引擎无关核心，分离引擎适配层”
-- ProtoShift-Core 追求的是高价值逻辑复用，而不是所有代码完全跨引擎通用
+- 自然语言 shell
+- 会话与计划推进
+- 通用工具调用
+- skill 装载和调度
 
-### 1.4 明确边界
+不负责：
 
-系统边界固定如下：
+- 游戏语义定义
+- Godot / Unreal 适配逻辑
+- 共享规则设计
 
-- Shared Core 只承载规则、状态、数据模型和可验证逻辑
-- Godot Adapter 与 Unreal Adapter 分别处理各自引擎生命周期、场景对象和编辑器能力
-- Agent Bridge 统一对外暴露操作语义，不直接绑定某个单一 MCP 实现
-- Unreal 侧不维护 UnrealCLR 或 MonoUE 备选主线
-- 系统不依赖截图理解、像素定位或人工点 UI 作为主工作流
+### 4.2 ProtoShift Extension
 
-### 1.5 不纳入范围
+负责：
 
-以下内容不在当前主线范围内：
+- ProtoShift 专用 instructions、commands、hooks
+- 面向游戏开发的 skills
+- 工作流约束和上下文注入
+- 把用户请求翻译成统一的引擎操作语义
 
-- 追求全部引擎层代码跨引擎通用
-- 并行维护多套 Unreal C# 运行时路线
-- 以截图还原为主的关卡生成或 UI 搭建流程
-- 一开始就统一复杂特效控件、引擎专有时间线或深度依赖渲染管线的视觉组件
+### 4.3 Shared Core
 
----
+负责：
 
-## 二、最终架构
+- 共享 C# 规则层
+- 状态机、任务、对话、配置、存档
+- 原型描述模型
+- 通用 UI Schema
 
-### 2.1 分层架构
-
-ProtoShift-Core 固定采用四层结构。
-
-#### A. Shared Core
-
-职责：承载跨引擎共享逻辑，只使用纯 .NET 能力，不直接引用 Godot 或 Unreal API。
-
-包含内容：
-
-- 玩法规则
-- 状态机
-- 任务系统
-- 对话系统
-- 行为树数据结构
-- AI 决策逻辑
-- 配置解析
-- 存档模型
-- 原型 DSL
-- 原型描述到运行对象的转换规则
-- 可测试、可回放、可断言的规则表达
-
-不包含内容：
+不负责：
 
 - Godot Node 生命周期
-- Unreal Actor 或 Component 生命周期
-- 引擎 UI 细节
-- 引擎物理实现
-- 引擎动画实现
-- 引擎导航实现
-- 任何直接依赖场景树、对象路径或引擎资源系统的代码
+- Unreal Actor / Component 生命周期
+- 引擎资源导入细节
+- 引擎特有 UI 控件实现
 
-#### B. Godot Adapter
+### 4.4 Engine Bridge
 
-职责：把 Shared Core 映射到 Godot，用于原型生成、运行和快速修正。
+负责：
 
-负责内容：
+- 统一 Godot 和 Unreal 的操作语义
+- 对下适配 MCP、CLI、Python、插件桥接等后端
+- 把日志、测试结果和运行状态回传给 opencode
 
-- 将共享对象模型实例化为 Godot 场景、节点和脚本
-- 处理输入、运行循环、信号、资源绑定和调试信息
-- 导出或读取节点包围盒、碰撞体、Marker、Anchor 和区域语义
-- 运行集成测试与自动游玩测试，并输出轨迹和关键状态
+## 5. 统一操作语义
 
-#### C. Unreal Adapter
+对外只暴露 ProtoShift 语义，不直接让用户操作零散引擎命令。
 
-职责：把 Shared Core 映射到 Unreal，用于正式开发承接。
+第一批统一语义建议固定为：
 
-负责内容：
-
-- 通过 UnrealSharp 调用共享核心
-- 把共享对象模型映射为 Actor、Component 和 Blueprint 可访问对象
-- 读取 Actor、Component、Socket、Volume 和关卡标记的空间元数据
-- 支持功能验证、长序列集成测试、自动游玩测试和编辑器自动化
-
-#### D. Agent Bridge
-
-职责：向 Agent 暴露统一的 ProtoShift 操作语义，并把底层实现适配到不同后端。
-
-标准能力包括：
-
-- 打开工程
-- 运行工程
+- 打开项目
+- 运行项目
 - 停止运行
-- 获取日志
-- 获取当前场景或关卡结构
-- 获取资产包围盒、碰撞体、Socket、Marker 和层级关系
-- 创建节点或 Actor
+- 读取日志
+- 获取场景 / 关卡结构
+- 创建对象
 - 修改属性
 - 创建脚本
 - 读取脚本
 - 编译或热重载
 - 查询资源
-- 运行单元测试、集成测试和自动游玩测试
-- 获取断言失败、状态快照、回放数据和运行轨迹
-- 执行基于约束的 3D 放置与校验
+- 运行测试
+- 导出迁移模型
+- 从迁移模型生成 Unreal 侧结构
 
-底层后端可以包括：
+## 6. 通用 UI 系统
 
-- Godot MCP
-- Unreal MCP
-- Godot CLI
-- Unreal Python
-- Remote Control
-- Commandlet
-- 编辑器插件或 WebSocket 桥
+UI 主线不做“跨引擎控件直接复用”，而是做“共享描述 + 双端映射”。
 
-### 2.2 空间语义解码层
+第一阶段只支持高迁移价值的 UI 能力：
 
-ProtoShift-Core 不把 3D 空间理解视为视觉识别问题，而把它定义为结构化约束求解问题。
+- Layout：纵向、横向、网格、滚动、叠层、间距、边距
+- Components：文本、图片、按钮、面板、列表、进度条、输入框
+- Theme：颜色、字号、字体、间距、圆角、描边、状态样式
+- Binding：文本绑定、数值绑定、可见性绑定、列表绑定
+- Events：点击、悬停、选中、禁用、焦点
 
-空间理解固定由三类输入共同构成。
+实现方式：
 
-#### A. Knowledge
+- Shared Core 保存 UI Schema 和 ViewModel
+- Godot Adapter 将其映射到 Control 体系
+- Unreal Adapter 将其映射到 UMG 或 Slate
+- 引擎专有复杂控件放在各自适配层扩展，不污染共享 Schema
 
-Knowledge 提供玩法规则、关卡常识和领域约束，用于定义什么样的空间关系是合理的。
+## 7. 最终使用流程
 
-典型内容包括：
+目标使用流程固定如下：
 
-- 台球桌尺寸、球直径、袋口范围、合法开球区
-- 第三人称角色身高、相机距离、可通行坡度、交互半径
-- FPS 场景中的掩体高度、Boss 安全距离、武器有效射程
-- UI 或机关布局中的最小间距、对齐规则和可读性约束
+1. 用户启动定制化的 opencode。
+2. 用户用自然语言描述要做的游戏原型。
+3. Agent 调用 ProtoShift skills，并通过 Godot MCP/CLI 创建和修改原型。
+4. 共享玩法规则、数据模型和 UI Schema 持续沉淀到 Shared Core。
+5. 用户确认原型方向稳定后，Agent 导出迁移模型。
+6. Agent 调用 Unreal MCP/CLI 和 UnrealSharp，在同一项目中生成 Unreal 侧承接结构。
+7. 用户继续通过同一个自然语言入口推进后续开发，而不是切换产品或重写玩法逻辑。
 
-#### B. Asset Metadata
+## 8. 第一阶段必须交付的东西
 
-Asset Metadata 提供资产真实的空间属性，用于定义对象有多大、能放在哪、是否会冲突、如何挂接。
+第一阶段不追求大而全，只交付真正影响主线闭环的部分：
 
-至少包含：
+1. opencode submodule 集成完成
+2. ProtoShift 自定义 instructions / commands / hooks 骨架
+3. Godot Bridge：MCP + CLI 最小可用能力
+4. Unreal Bridge：MCP + CLI 最小可用能力
+5. Shared Core：最小 C# 共享规则工程
+6. UnrealSharp 接入 Shared Core 的验证样例
+7. 通用 UI Schema 的最小版本
+8. 从 Godot 原型到 Unreal 承接的最小迁移样例
 
-- 包围盒尺寸
-- 碰撞体形状与范围
-- 枢轴点或原点定义
-- 朝向约定
-- 缩放基准与单位
-- Socket、挂点、交互点或可附着位置
-- 资源标签
+## 9. 建议目录结构
 
-#### C. Design Metadata
+建议按最小落地结构组织：
 
-Design Metadata 提供设计意图与空间锚点，用于定义哪些位置具有明确语义。
+- `opencode/`
+- `src/OpenCodeExtension`
+- `src/SharedCore`
+- `src/EngineBridge`
+- `src/GodotBridge`
+- `src/UnrealBridge`
+- `src/UiSchema`
+- `docs/`
+- `samples/`
 
-至少包含：
+## 10. 不做的事情
 
-- 世界坐标、旋转、缩放
-- 父子层级关系
-- 区域语义
-- 标记之间的引用关系
+以下内容不进入第一阶段：
 
-#### D. 统一求解流程
+- 自建一整套通用 Agent runtime 替代 opencode
+- 追求全部引擎层代码跨引擎通用
+- 同时维护多套 Unreal C# 方案
+- 一开始就覆盖复杂特效控件和引擎专有 UI 时间线
+- 把主要工作流建立在截图理解和人工点编辑器上
 
-当三类输入同时可用时，系统按以下顺序求解：
+## 11. 当前结论
 
-1. 由 Knowledge 提供规则边界和空间约束
-2. 由 Asset Metadata 提供候选对象的几何与碰撞事实
-3. 由 Design Metadata 提供关卡中的语义锚点与区域关系
-4. 由 Shared Core 或 Tooling 计算坐标、朝向、缩放和挂接关系
-5. 由适配层把结果写入 Godot 或 Unreal 场景对象
+ProtoShift-Core 的正确方向不是继续扩展抽象层，而是先完成这个最小闭环：
 
-### 2.3 自动化验证与修复闭环
-
-ProtoShift-Core 把所有可验证的系统能力纳入自动化闭环，重点覆盖游戏规则、状态机、数值结算、任务推进、波次调度、UI 绑定和输入响应。
-
-这个闭环的目标不是无限修复，而是用测试结果驱动收敛。
-
-#### A. 三层测试体系
-
-测试体系固定为三层：
-
-1. 单一系统测试
-
-用于验证单个系统的正确性，尽量隔离变量。
-
-典型覆盖：
-
-- 伤害计算
-- 回合切换
-- 球体入袋判定
-- 武器冷却
-- 对话分支跳转
-- 任务状态迁移
-
-2. 集成测试
-
-用于连接多个系统并运行多帧，验证更长序列是否稳定。
-
-典型覆盖：
-
-- 输入到状态机切换再到动画触发的链路
-- 敌人生成、寻路、受击、死亡和掉落的完整序列
-- Boss 阶段切换、技能编排和 UI 更新联动
-- UI 绑定、数据更新和交互响应联动
-
-3. 自动游玩测试
-
-用于模拟真实玩家行为，主动捕捉边缘情况。
-
-典型覆盖：
-
-- 高频输入
-- 极端移动路径
-- 连续拾取、连续受击、连续打断
-- 跨关卡、跨菜单、跨战斗状态切换
-- 长时间运行下的累积性问题
-
-#### B. 终止条件
-
-自动修复循环的终止条件不是“看起来差不多能用”，而是分层测试通过。
-
-收敛逻辑固定如下：
-
-1. 单一系统测试先通过，确保基础规则正确
-2. 集成测试通过，确保系统连接关系成立
-3. 自动游玩测试通过，确保主要边缘情况得到覆盖
-4. 若某一层连续失败超过阈值，则升级为需要人类介入的问题，而不是无限重试
-
-#### C. Autonomous bug fix loop
-
-自动化修复闭环固定按以下流程执行：
-
-1. Agent 生成或修改系统实现
-2. 自动运行单一系统测试、集成测试和自动游玩测试
-3. 采集失败日志、断言结果、运行轨迹和关键状态快照
-4. 将失败信息映射回共享核心、适配层或桥接层的责任点
-5. Agent 基于失败证据执行修复
-6. 重新运行受影响测试和必要回归测试
-7. 全部通过后结束本轮；未通过则继续迭代或升级给人处理
-
-#### D. 人机分工
-
-这套闭环不试图把人完全移出流程，而是重新定义人的角色：
-
-- 人负责定义目标、规则边界和验收标准
-- Agent 负责高频构建、验证、回归和修复
-- 超出当前规则或测试覆盖范围的问题，由人接管裁决
-
-### 2.4 核心设计原则
-
-ProtoShift-Core 固定遵循以下原则。
-
-#### 原则 0：CAT 原则优先
-
-- C - Code Reuse：共享尽可能多的规则、状态和数据表达
-- A - Adapter Design：先抽象统一语义，再由适配层承接 Godot 与 Unreal 的差异
-- T - Token-friendly：优先使用代码、结构化数据和明确语义驱动系统，而不是依赖截图和视觉定位
-
-其中 T 是最高优先级约束。任何迫使 Agent 退化为“看图点 UI”或“凭截图猜位置”的设计，都视为偏离主线。
-
-#### 原则 1：先统一语义，再统一实现
-
-系统不直接统一 Godot 和 Unreal 的 API，而是统一以下高层语义：
-
-- 实体
-- 组件
-- 行为
-- 状态
-- 资源引用
-- 交互事件
-- 原型模板
-
-#### 原则 2：共享核心只负责规则，不负责表现
-
-所有依赖场景树、资源系统、编辑器或引擎表现层的能力，都留在适配层实现。
-
-#### 原则 3：桥接层必须可替换
-
-ProtoShift 不绑定单一 MCP 仓库。MCP、CLI、Python、HTTP 都只是后端实现，不是系统边界。
-
-#### 原则 4：测试不是可选项
-
-所有可验证能力都必须进入自动化验证链路。测试既是质量边界，也是自动化迭代的终止条件。
-
----
-
-## 三、最终执行方案
-
-### 3.1 标准执行链路
-
-ProtoShift-Core 的标准执行链路固定如下：
-
-1. 人定义目标、验收标准和关键约束
-2. Agent 生成中间描述，而不是直接写死某个引擎实现
-3. Shared Core 读取中间描述，生成统一玩法对象模型
-4. Godot Adapter 将模型实例化为原型场景和脚本
-5. Agent Bridge 触发运行、日志收集、测试执行和错误回写
-6. 自动化修复闭环持续迭代，直到分层测试通过或触发升级阈值
-7. 原型稳定后，Unreal Adapter 读取同一份共享模型，在 Unreal 中重建可持续开发版本
-8. Unreal 继续承接复杂玩法、资产和正式内容生产
-
-### 3.2 目录结构
-
-目录结构固定为：
-
-- src/SharedCore
-- src/SharedAbstractions
-- src/GodotAdapter
-- src/UnrealAdapter
+- 基于 opencode 做定制化宿主
+- 接通 Godot 和 Unreal 的 MCP / CLI 工具
+- 用 Shared Core 复用尽可能多的 C# 逻辑
+- 用通用 UI Schema 保持 UI 可迁移
+- 让用户始终通过同一个自然语言入口完成从 Godot 原型到 Unreal 承接的全流程
 - src/AgentProtocol
 - src/Tooling
+- src/OpenCodeExtension
+- src/Skills
 - docs
 - examples
 - samples
@@ -352,9 +197,55 @@ ProtoShift-Core 的标准执行链路固定如下：
 
 这意味着：
 
-- Agent 面对的是统一动作，而不是底层工具碎片
+- 用户面对的是 OpenCode Shell 中的 ProtoShift 语义能力，而不是零散后端命令
 - Godot MCP、Unreal MCP、Godot CLI、Unreal Python、Remote Control 都作为内部后端存在
-- 底层实现可以替换，但上层工作流保持稳定
+- OpenCode 是主壳层，但上层工作流由 ProtoShift 语义和 Skills 驱动
+
+### 3.4 执行层最终决策
+
+执行层固定采用“OpenCode 主壳层 + ProtoShift Skills 与扩展层”的方案。
+
+第一阶段主线如下：
+
+- 用户通过自然语言在终端中与 ProtoShift 交互
+- 用户使用层直接运行 OpenCode 风格的终端 Agent，并通过 ProtoShift 扩展获得游戏引擎工作流能力
+- OpenCode 作为主壳层、主会话系统和通用 Agent runtime
+- ProtoShift 基于 OpenCode 做二次开发，而不是完全自建一个新的通用后端
+- 交互模型遵循 one bash 理念：用户进入同一个 shell 后完成提问、规划、执行、调试、测试与回归
+- OpenCode Shell 承载会话、计划和通用工具调用，ProtoShift 扩展在其中注入引擎语义、测试编排和领域约束
+- ProtoShift 在内部挂接 Godot MCP、Unreal MCP、CLI、Python、Remote Control 等后端，并统一映射到 ProtoShift 语义动作
+
+OpenCode 主壳层固定负责：
+
+- one bash 单入口 shell
+- 自然语言会话与命令控制面
+- 通用 Skills 装载、发现、路由和版本管理
+- 会话状态、计划推进和通用代码代理体验
+
+ProtoShift 扩展层固定负责：
+
+- ProtoShift 专用 instructions、commands、hooks 和工作流约束
+- Shared Core、Agent Bridge、Godot Adapter、Unreal Adapter 的上下文注入
+- 测试、回归、日志、快照和回放的统一编排
+- 将用户请求和工具执行统一映射回 ProtoShift 语义结果
+
+ProtoShift Skills 固定负责：
+
+- 将领域能力按高层语义拆分为可组合的能力单元
+- 为 Godot、Unreal、Shared Core、测试、迁移、空间语义解码提供独立技能边界
+- 让 OpenCode Shell 基于上下文选择、串联和约束不同技能
+- 保持技能层可扩展，而不污染共享核心与引擎适配层
+
+该决策的目标不是抽象参考 OpenCode，而是直接站在 OpenCode 之上做产品化扩展，把研发资源集中在 ProtoShift 自身真正不可替代的能力上：
+
+- 跨引擎共享规则层
+- ProtoShift 统一语义层
+- ProtoShift Skills 与 OpenCode 扩展层
+- Godot 与 Unreal 适配层
+- 自动化验证与修复闭环
+- 空间语义解码与原型迁移能力
+
+如果未来需要替换 OpenCode、增加桌面前端或引入远程客户端，这些调整只能发生在主壳层之外或作为后续迁移工程，不改变 ProtoShift 语义层、Skills 驱动和 one bash 工作流优先的总原则。
 
 ---
 
@@ -369,7 +260,25 @@ Shared Core 最终负责：
 - 提供可测试、可回放、可断言的规则表达
 - 统一管理空间知识、资产元数据和设计标记语义
 
-### 4.2 Godot
+### 4.2 OpenCode Host
+
+OpenCode Host 最终负责：
+
+- 提供用户自然语言交互入口
+- 管理会话、计划和通用工具调用
+- 承载通用 Skills 的装载、路由和执行上下文
+- 为 ProtoShift 扩展提供稳定的主壳层与运行时环境
+
+### 4.3 ProtoShift Extension
+
+ProtoShift Extension 最终负责：
+
+- 把 OpenCode 的通用 Agent 能力映射到 ProtoShift 游戏原型工作流
+- 注入 ProtoShift 语义约束、工作流规则和领域上下文
+- 管理 ProtoShift Skills、命令、hooks、日志和验证编排
+- 统一连接 Shared Core、Agent Bridge 和各引擎适配器
+
+### 4.4 Godot
 
 Godot 最终负责：
 
@@ -379,7 +288,7 @@ Godot 最终负责：
 - 导出或读取包围盒、碰撞体、Marker、Anchor 和区域语义
 - 运行集成测试和自动游玩测试，并输出关键状态和轨迹
 
-### 4.3 Unreal
+### 4.5 Unreal
 
 Unreal 最终负责：
 
@@ -389,19 +298,19 @@ Unreal 最终负责：
 - 读取 Socket、Volume 和关卡标记的空间元数据
 - 运行功能验证、长序列集成测试和自动游玩测试
 
-### 4.4 Agent Bridge 与平台能力
+### 4.6 Agent Bridge 与平台能力
 
 平台最终负责：
 
 - 对外暴露统一 ProtoShift 操作语义
 - 对内适配多种后端实现
-- 保持共享层、适配层、桥接层边界清晰
+- 保持 OpenCode Host、扩展层、共享层、适配层、桥接层边界清晰
 - 以分层测试作为自动化迭代与缺陷修复的终止条件
-- 运行 Autonomous bug fix loop，自动执行验证、定位失败并触发回归修复
+- 运行 Autonomous Bug Fix Loop，自动执行验证、定位失败并触发回归修复
 - 通过 Knowledge、Asset Metadata、Design Metadata 完成空间语义解码
 - 支持 Godot 原型到 Unreal 承接的同构工作流
 
-### 4.5 跨引擎 UI
+### 4.7 跨引擎 UI
 
 UI 层采用自建的 ProtoShift UI Schema，不依赖现成双端 UI 框架直接完成 Godot 到 Unreal 的无损迁移。
 
@@ -506,8 +415,10 @@ ProtoShift-Core 的最终执行方案可以归纳为：
 - Shared Core 是跨引擎纯 .NET 规则层
 - Unreal 是正式开发承接引擎
 - UnrealSharp 是 Unreal 侧唯一 C# 运行层
+- OpenCode 是第一阶段主壳层与主运行时，ProtoShift 在其上提供领域扩展
+- ProtoShift Skills 与扩展层负责把通用 Agent 能力转化为游戏原型工作流
 - ProtoShift 统一操作语义是对外唯一执行入口
-- 分层测试是自动化迭代终止条件，Autonomous bug fix loop 是缺陷收敛机制
+- 分层测试是自动化迭代终止条件，Autonomous Bug Fix Loop 是缺陷收敛机制
 - Knowledge、Asset Metadata、Design Metadata 共同构成空间理解输入层
 - MCP、CLI、Python、Remote Control 等能力都只是可替换后端，不是系统边界
 
