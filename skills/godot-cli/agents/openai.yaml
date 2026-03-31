@@ -1,0 +1,8 @@
+interface:
+  display_name: "Godot 命令行"
+  short_description: "用命令行驱动 Godot 项目"
+  default_prompt: "使用 $godot-cli 通过命令行检查、运行、调试、导入或导出 Godot 项目。"
+
+policy:
+  allow_implicit_invocation: true
+
